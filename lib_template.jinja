@@ -1,7 +1,17 @@
-'''TEMPLATE: fill this in'''
+'''Simple charm resurrection library.
+
+Usage:
+
+>>> class MyCharm(CharmBase):
+>>>     def __init__(...):
+>>>         self.resurrect = Resurrect(self, every=timedelta(hours=5))
+>>>         self.framework.observe(self.resurrect.on.timeout, self._on_resurrect_timeout)
+>>>     def _on_resurrect_timeout(self, _):
+>>>         _do_scheduled_maintenance()
+'''
 
 # The unique Charmhub library identifier, never change it
-LIBID = $LIBID  # $ TEMPLATE: Filled in by ./scripts/init.sh
+LIBID = "95764e4063f242558df204d89dbd55dc"
 
 # Increment this major API version when introducing breaking changes
 LIBAPI = {{ version }}

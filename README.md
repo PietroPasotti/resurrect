@@ -1,31 +1,26 @@
-# how to use this template
+Simple charm resurrection library.
 
-Cd to the template root dir.
+Usage:
 
-- run `scripts/init.sh <CHARM_NAME> <LIB_NAME> [<LIB_VERSION>]`
-
-This will 
- - Register a charm with name LIB_NAME
- - Initialize a library called LIB_NAME (with version LIB_VERSION or v0 if not provided)
-   - Grab the LIBID
-   - Use LIBID and the other variables to populate: 
-     - `metadata.yaml`
-     - `tox.ini`
-     - `lib_template.jinja`
-     - `scripts/init.sh`
-     - `scripts/inline-lib.py`
-     - `scripts/publish.sh`
-   - Create `./<LIB_NAME>.py`
-
-After that, you should put your lib code in `./<LIB_NAME>.py`
-When you're ready to publish the lib for the first time, 
-you should run `scripts/inline-lib.py && scripts/publish.sh`
-
-All subsequent times, if you want to publish a new revision, you can run `scripts/update.sh`.
-This will 
- - Bump the revision
- - Inline the lib
- - Publish the lib
-
-When you bump to a new (major) version, you'll have to manually change the 
-value of `$LIB_V` in `scripts/publish.sh`.
+```python
+class MyCharm(CharmBase):
+    def __init__(...):
+        self.resurrect = Resurrect(self, every=timedelta(hours=5))
+        self.framework.observe(self.resurrect.on.timeout, self._on_resurrect_timeout)
+        self.framework.observe(self.on.start, self._on_start)
+        self.framework.observe(self.on.remove, self._on_remove)
+        
+    def _on_start(self, _):
+        # prime the Resurrect with the current env, plus this additional custom var.
+        self.resurrect.prime({'CUSTOM_ENV_VAR':'foo'})
+        self.resurrect.start()
+        
+    def _on_resurrect_timeout(self, _):
+        print("I'm 5 hours old!")
+        _do_scheduled_task()
+        # this will be called with the env you stored with prime()
+        assert os.getenv('CUSTOM_ENV_VAR') == 'foo'
+        
+    def _on_remove(self, _):
+        self.resurrect.stop()
+```
